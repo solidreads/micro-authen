@@ -1,6 +1,5 @@
 # Test your FastAPI endpoints
-
-POST http://0.0.0.0:8081/posts
+POST {{host}}/user/signup
 Content-Type: application/json
 
 {
@@ -15,3 +14,9 @@ GET http://127.0.0.1:8081/posts/1
 Accept: application/json
 
 ###
+
+GET {{host}}/
+Accept: application/json
+
+###
+
