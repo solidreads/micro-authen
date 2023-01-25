@@ -1,0 +1,17 @@
+# Test your FastAPI endpoints
+
+POST http://0.0.0.0:8081/posts
+Content-Type: application/json
+
+{
+  "id": 2,
+ "title": "Lorem Ipsum tres",
+  "content": "content goes here"
+}
+
+###
+
+GET http://127.0.0.1:8081/posts/1
+Accept: application/json
+
+###
