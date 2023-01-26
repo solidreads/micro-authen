@@ -2,11 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "postgresql://marco:Test123#@localhost:5432/db_usuario"
+from decouple import config
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL
-)
+SQLALCHEMY_DATABASE_URL = config("DATABASE_URL")
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

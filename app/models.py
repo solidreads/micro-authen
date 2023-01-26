@@ -1,6 +1,5 @@
 """Con esta estructura, un usuario puede tener varios roles, y cada rol puede tener varios permisos. """
 from sqlalchemy import Column, String, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import UUID
 
 from .database import Base
@@ -8,10 +7,10 @@ from .database import Base
 
 class Usuario(Base):
     __tablename__ = "usuario"
-    id = Column(UUID(as_uuid=True), primary_key=True)
+    id = Column("id", UUID(as_uuid=True), primary_key=True)
     nombre_usuario = Column(String(100), nullable=False)
     email = Column(String(100), nullable=False)
-    password = Column(String(100), nullable=False)
+    password = Column(String(200), nullable=False)
 
 
 class Roles(Base):

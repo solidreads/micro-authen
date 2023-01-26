@@ -25,7 +25,9 @@ class UserLoginSchema(BaseModel):
     password: str = Field(...)
 
     class Config:
-        schema_extra = {"example": {"email": "abdulazeez@x.com", "password": "weakpassword"}}
+        schema_extra = {
+            "example": {"email": "abdulazeez@x.com", "password": "weakpassword"}
+        }
 
 
 class Roles(BaseModel):

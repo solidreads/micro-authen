@@ -1,9 +1,9 @@
-import os
+import logging
+import uuid
 
+import bcrypt
 from fastapi import FastAPI, Body, Depends
 from sqlalchemy.orm import Session
-
-from dotenv import load_dotenv
 
 from app.schema import UsuarioSchema, UserLoginSchema
 from app.auth.auth_handler import signJWT
@@ -25,6 +25,7 @@ def get_db():
     finally:
         db.close()
 
+
 users = []
 
 
@@ -39,9 +40,19 @@ async def read_root():
 
 
 @app.post("/user/signup", tags=["user"])
-async def create_user(user: UsuarioSchema = Body(...)):
-    users.append(user)
-    return signJWT(user.email)
+async def crear_usuario(db: Session = Depends(get_db), user: UsuarioSchema = Body(...)):
+
+    hashed_password = bcrypt.hashpw(user.password.encode("utf-8"), bcrypt.gensalt())
+    logging.warning(len(hashed_password))
+    db_user = models.Usuario(
+        id=uuid.uuid4(),
+        nombre_usuario=user.nombre_usuario,
+        email=user.email,
+        password=hashed_password,
+    )
+    db.add(db_user)
+    db.commit()
+    return {"message": "User created successfully!"}
 
 
 def check_user(data: UserLoginSchema):
@@ -55,6 +66,9 @@ def check_user(data: UserLoginSchema):
 async def user_login(user: UserLoginSchema = Body(...)):
     if check_user(user):
         return signJWT(user.email)
-    return {
-        "error": "Wrong login details!"
-    }
+    return {"error": "Wrong login details!"}
+
+
+@app.get("/user/perfil", dependencies=[Depends(JWTBearer())], tags=["user"])
+async def user_perfil(db: Session = Depends(get_db)):
+    return db.query(models.Usuario).all()

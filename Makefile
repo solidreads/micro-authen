@@ -6,3 +6,7 @@ req:
 
 run:
 	python3 main.py
+
+
+black:
+	black . --exclude venv
