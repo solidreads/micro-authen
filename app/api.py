@@ -1,11 +1,29 @@
-from fastapi import FastAPI, Body, Depends
+import os
 
-from app.schema import UserSchema, UserLoginSchema
+from fastapi import FastAPI, Body, Depends
+from sqlalchemy.orm import Session
+
+from dotenv import load_dotenv
+
+from app.schema import UsuarioSchema, UserLoginSchema
 from app.auth.auth_handler import signJWT
 from app.auth.auth_bearer import JWTBearer
 
+from .database import SessionLocal, engine
+from . import models
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 users = []
 
@@ -21,8 +39,8 @@ async def read_root():
 
 
 @app.post("/user/signup", tags=["user"])
-async def create_user(user: UserSchema = Body(...)):
-    users.append(user) # replace with db call, making sure to hash the password first
+async def create_user(user: UsuarioSchema = Body(...)):
+    users.append(user)
     return signJWT(user.email)
 
 
