@@ -10,8 +10,7 @@ class Usuario(Base):
     id = Column("id", UUID(as_uuid=True), primary_key=True)
     nombre_usuario = Column(String(100), nullable=False)
     email = Column(String(100), nullable=False)
-    password = Column(String(200), nullable=False)
-
+    password = Column(String)
 
 class Roles(Base):
     __tablename__ = "roles"

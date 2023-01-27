@@ -2,8 +2,11 @@ import logging
 import uuid
 
 import bcrypt
-from fastapi import FastAPI, Body, Depends
+from fastapi import FastAPI, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
+
+from passlib.context import CryptContext
+
 
 from app.schema import UsuarioSchema, UserLoginSchema
 from app.auth.auth_handler import signJWT
@@ -16,8 +19,11 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+logging.basicConfig(level=logging.DEBUG)
 
-# Dependency
+pwd_context = CryptContext(schemes=["scrypt"])
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -31,6 +37,7 @@ users = []
 
 @app.get("/ping")
 def pong():
+    logging.warning("pong")
     return {"ping": "pong!"}
 
 
@@ -42,8 +49,7 @@ async def read_root():
 @app.post("/user/signup", tags=["user"])
 async def crear_usuario(db: Session = Depends(get_db), user: UsuarioSchema = Body(...)):
 
-    hashed_password = bcrypt.hashpw(user.password.encode("utf-8"), bcrypt.gensalt())
-    logging.warning(len(hashed_password))
+    hashed_password = pwd_context.encrypt(user.password)
     db_user = models.Usuario(
         id=uuid.uuid4(),
         nombre_usuario=user.nombre_usuario,
@@ -52,21 +58,18 @@ async def crear_usuario(db: Session = Depends(get_db), user: UsuarioSchema = Bod
     )
     db.add(db_user)
     db.commit()
-    return {"message": "User created successfully!"}
-
-
-def check_user(data: UserLoginSchema):
-    for user in users:
-        if user.email == data.email and user.password == data.password:
-            return True
-    return False
+    return {"message": "Usuario creado correctanmente"}
 
 
 @app.post("/user/login", tags=["user"])
-async def user_login(user: UserLoginSchema = Body(...)):
-    if check_user(user):
-        return signJWT(user.email)
-    return {"error": "Wrong login details!"}
+async def user_login(db: Session = Depends(get_db), user: UserLoginSchema = Body(...)):
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.email == user.email).first()
+    if not db_usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    if not pwd_context.verify(user.password, db_usuario.password):
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+    return signJWT(user.email)
 
 
 @app.get("/user/perfil", dependencies=[Depends(JWTBearer())], tags=["user"])

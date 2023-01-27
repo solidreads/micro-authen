@@ -3,7 +3,7 @@
 Crear migraciones con alembic
 
 ```shell
-alembic revision --autogenerate -m "create table"
+alembic revision --autogenerate -m "modificar usaurio"
 ```
 Correr las migraciones
 ```shell
